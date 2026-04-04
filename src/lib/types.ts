@@ -25,6 +25,15 @@ export interface RsvpResponse {
   updated_at: string;
 }
 
+export interface GuestDetail {
+  guest_name: string;
+  party_name: string;
+  guest_of: string;
+  hotel_invited: boolean;
+  rsvp_status: "yes" | "no" | "hopefully" | null;
+  hotel_stay: boolean | null;
+}
+
 export interface DashboardStats {
   totalGuests: number;
   totalResponses: number;
@@ -54,6 +63,7 @@ export interface DashboardStats {
     declined: number;
     notResponded: number;
   };
+  allGuests: GuestDetail[];
   dietary: {
     hasRestrictions: number;
     vegetarian: number;

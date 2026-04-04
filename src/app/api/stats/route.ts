@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import type { Guest, RsvpResponse, DashboardStats } from "@/lib/types";
+import type { Guest, RsvpResponse, DashboardStats, GuestDetail } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -96,6 +96,19 @@ export async function GET() {
         hotelInvitedResponses.filter((r) => r.hotel_stay !== null).length,
     };
 
+    // Build full guest list with merged response data
+    const allGuests: GuestDetail[] = guestsList.map((g) => {
+      const response = responseMap.get(g.id);
+      return {
+        guest_name: g.guest_name,
+        party_name: g.party_name,
+        guest_of: g.guest_of,
+        hotel_invited: g.hotel_invited,
+        rsvp_status: response?.rsvp_status ?? null,
+        hotel_stay: response?.hotel_stay ?? null,
+      };
+    });
+
     // Calculate dietary stats
     const withRestrictions = responsesList.filter(
       (r) => r.has_dietary_restrictions
@@ -128,6 +141,7 @@ export async function GET() {
       notResponded,
       byGuestOf,
       hotel,
+      allGuests,
       dietary,
       customMessages,
     };
