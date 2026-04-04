@@ -281,6 +281,7 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
         const q = searchQuery.toLowerCase();
         if (
           !g.guest_name.toLowerCase().includes(q) &&
+          !g.party_code.toLowerCase().includes(q) &&
           !g.party_name.toLowerCase().includes(q)
         ) {
           return false;
@@ -354,6 +355,7 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
           <thead className="sticky top-0 bg-white">
             <tr className="border-b border-gray-200 text-left">
               <th className="pb-2 pr-4 font-medium text-gray-500">Guest Name</th>
+              <th className="pb-2 pr-4 font-medium text-gray-500">Party Code</th>
               <th className="pb-2 pr-4 font-medium text-gray-500">Party</th>
               <th className="pb-2 pr-4 font-medium text-gray-500">Guest Of</th>
               <th className="pb-2 pr-4 font-medium text-gray-500">RSVP Status</th>
@@ -363,7 +365,7 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
           <tbody>
             {filteredGuests.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-400">
+                <td colSpan={6} className="py-8 text-center text-gray-400">
                   No guests match the current filters
                 </td>
               </tr>
@@ -371,6 +373,7 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
               filteredGuests.map((guest, idx) => (
                 <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-2.5 pr-4 text-gray-900 font-medium">{guest.guest_name}</td>
+                  <td className="py-2.5 pr-4 text-gray-500 font-mono text-xs">{guest.party_code}</td>
                   <td className="py-2.5 pr-4 text-gray-600">{guest.party_name}</td>
                   <td className="py-2.5 pr-4 capitalize text-gray-600">{guest.guest_of}</td>
                   <td className="py-2.5 pr-4"><RsvpBadge status={guest.rsvp_status} /></td>
@@ -380,6 +383,10 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
             )}
           </tbody>
         </table>
+      </div>
+      <div className="pt-3 border-t border-gray-200 mt-2 text-sm text-gray-600 font-medium">
+        Total: {filteredGuests.length} guest{filteredGuests.length !== 1 ? "s" : ""}
+        {hasActiveFilters && ` (of ${guests.length})`}
       </div>
     </div>
   );

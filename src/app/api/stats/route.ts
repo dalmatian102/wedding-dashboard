@@ -101,6 +101,7 @@ export async function GET() {
       const response = responseMap.get(g.id);
       return {
         guest_name: g.guest_name,
+        party_code: g.party_code,
         party_name: g.party_name,
         guest_of: g.guest_of,
         hotel_invited: g.hotel_invited,

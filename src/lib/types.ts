@@ -27,6 +27,7 @@ export interface RsvpResponse {
 
 export interface GuestDetail {
   guest_name: string;
+  party_code: string;
   party_name: string;
   guest_of: string;
   hotel_invited: boolean;
