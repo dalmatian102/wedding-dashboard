@@ -349,9 +349,9 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-auto max-h-[48rem]">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 bg-white">
             <tr className="border-b border-gray-200 text-left">
               <th className="pb-2 pr-4 font-medium text-gray-500">Guest Name</th>
               <th className="pb-2 pr-4 font-medium text-gray-500">Party</th>
@@ -606,11 +606,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* All Guests Table */}
-        <GuestTable guests={stats.allGuests} />
-
         {/* Custom Messages */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-[#590102]" />
             <h3 className="text-lg font-semibold">Messages from Guests</h3>
@@ -638,6 +635,9 @@ export default function Dashboard() {
             </p>
           )}
         </div>
+
+        {/* All Guests Table */}
+        <GuestTable guests={stats.allGuests} />
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-400">
