@@ -13,6 +13,9 @@ import {
   RefreshCw,
   Heart,
   Search,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from "lucide-react";
 import type { DashboardStats, GuestDetail } from "@/lib/types";
 
@@ -248,14 +251,41 @@ function FilterToggle<T extends string>({
   );
 }
 
+type SortKey = "guest_name" | "party_code" | "party_name" | "guest_of" | "rsvp_status" | "hotel";
+type SortDir = "asc" | "desc";
+
+const RSVP_ORDER: Record<string, number> = { yes: 0, hopefully: 1, no: 2 };
+const HOTEL_ORDER = (g: GuestDetail): number => {
+  if (!g.hotel_invited) return 4;
+  if (g.hotel_stay === true) return 0;
+  if (g.hotel_stay === null) return 1;
+  return 2; // declined
+};
+
+function SortIcon({ sortKey, currentKey, direction }: { sortKey: SortKey; currentKey: SortKey | null; direction: SortDir }) {
+  if (currentKey !== sortKey) return <ArrowUpDown className="w-3 h-3 text-gray-300" />;
+  return direction === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
+}
+
 function GuestTable({ guests }: { guests: GuestDetail[] }) {
   const [rsvpFilter, setRsvpFilter] = useState<RsvpFilter>("all");
   const [guestOfFilter, setGuestOfFilter] = useState<GuestOfFilter>("all");
   const [hotelFilter, setHotelFilter] = useState<HotelFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
 
   const filteredGuests = useMemo(() => {
-    return guests.filter((g) => {
+    const filtered = guests.filter((g) => {
       if (rsvpFilter !== "all") {
         if (rsvpFilter === "no_response" && g.rsvp_status !== null) return false;
         if (rsvpFilter !== "no_response" && g.rsvp_status !== rsvpFilter) return false;
@@ -289,7 +319,39 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
       }
       return true;
     });
-  }, [guests, rsvpFilter, guestOfFilter, hotelFilter, searchQuery]);
+
+    if (sortKey) {
+      filtered.sort((a, b) => {
+        let cmp = 0;
+        switch (sortKey) {
+          case "guest_name":
+            cmp = a.guest_name.localeCompare(b.guest_name);
+            break;
+          case "party_code":
+            cmp = a.party_code.localeCompare(b.party_code);
+            break;
+          case "party_name":
+            cmp = a.party_name.localeCompare(b.party_name);
+            break;
+          case "guest_of":
+            cmp = a.guest_of.localeCompare(b.guest_of);
+            break;
+          case "rsvp_status": {
+            const aVal = a.rsvp_status ? RSVP_ORDER[a.rsvp_status] : 3;
+            const bVal = b.rsvp_status ? RSVP_ORDER[b.rsvp_status] : 3;
+            cmp = aVal - bVal;
+            break;
+          }
+          case "hotel":
+            cmp = HOTEL_ORDER(a) - HOTEL_ORDER(b);
+            break;
+        }
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    return filtered;
+  }, [guests, rsvpFilter, guestOfFilter, hotelFilter, searchQuery, sortKey, sortDir]);
 
   const clearFilters = () => {
     setRsvpFilter("all");
@@ -354,12 +416,25 @@ function GuestTable({ guests }: { guests: GuestDetail[] }) {
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-white">
             <tr className="border-b border-gray-200 text-left">
-              <th className="pb-2 pr-4 font-medium text-gray-500">Guest Name</th>
-              <th className="pb-2 pr-4 font-medium text-gray-500">Party Code</th>
-              <th className="pb-2 pr-4 font-medium text-gray-500">Party</th>
-              <th className="pb-2 pr-4 font-medium text-gray-500">Guest Of</th>
-              <th className="pb-2 pr-4 font-medium text-gray-500">RSVP Status</th>
-              <th className="pb-2 font-medium text-gray-500">Hotel</th>
+              {([
+                ["guest_name", "Guest Name"],
+                ["party_code", "Party Code"],
+                ["party_name", "Party"],
+                ["guest_of", "Guest Of"],
+                ["rsvp_status", "RSVP Status"],
+                ["hotel", "Hotel"],
+              ] as const).map(([key, label]) => (
+                <th
+                  key={key}
+                  className={`pb-2 ${key !== "hotel" ? "pr-4" : ""} font-medium text-gray-500 cursor-pointer select-none hover:text-gray-700`}
+                  onClick={() => handleSort(key)}
+                >
+                  <div className="flex items-center gap-1">
+                    {label}
+                    <SortIcon sortKey={key} currentKey={sortKey} direction={sortDir} />
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
